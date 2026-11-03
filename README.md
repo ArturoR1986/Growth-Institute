@@ -1,5 +1,7 @@
 # Growth Institute — Sponsor program dashboard
 
+Repository: https://github.com/ArturoR1986/Growth-Institute (public reviewer access).
+
 Challenge A: a company sponsor sees team progress without entering the learning platform. The sponsor is a separately provisioned account, not a learner. A small Python standard-library server serves a responsive dashboard and a sponsor-safe API.
 
 ## Quick start (fresh checkout)
@@ -67,4 +69,5 @@ Browser checks verified desktop/mobile layout, team tabs, collapse/reopen, keybo
 ## Delivery and scope honesty
 
 DECISION_NOTE.md is the Spanish decision note (under 300 words). SUBMISSION_CHECKLIST.md tracks delivery readiness. The repository intentionally excludes credentials, local configuration and logs. No external deployment is required by the brief and none is claimed. Work was AI-assisted. Active work time was not reliably tracked across the successive refinements; measured compliance with the four-hour limit is not claimed. Later hardening and live-source work should be disclosed as follow-up improvements, not presented as a timed initial attempt.
+
 

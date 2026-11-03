@@ -9,9 +9,10 @@
 - [x] 120-learner calculation tested; team UI paginates at 20 rows.
 - [x] Fresh-checkout setup/run/test instructions and limitations documented.
 - [x] Spanish decision note under 300 words.
-- [ ] Publish the reviewed file set to the user-authorized public repository https://github.com/ArturoR1986/Growth-Institute and verify it.
+- [x] Published and verified the reviewed file set at https://github.com/ArturoR1986/Growth-Institute. Public visibility provides reviewer read access; credentials/config/logs are absent.
 - [ ] Optional deployment (intentionally omitted).
 - [ ] User reviews decision note/time disclosure before sending application response.
 
-No email, application submission or reviewer invitation has been sent. Remote publication has been authorized for the repository above.
+No email, application submission or reviewer invitation has been sent. Remote publication was authorized and completed for the repository above.
+
 
