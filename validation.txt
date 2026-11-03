@@ -1,0 +1,30 @@
+test_all_learners_have_complete_details (test_boundaries.Boundaries.test_all_learners_have_complete_details) ... ok
+test_disjoint_reconnects (test_boundaries.Boundaries.test_disjoint_reconnects) ... ok
+test_earliest_completion_retained (test_boundaries.Boundaries.test_earliest_completion_retained) ... ok
+test_in_progress_and_no_completed_weeks (test_boundaries.Boundaries.test_in_progress_and_no_completed_weeks) ... ok
+test_invalid_records_are_rejected (test_boundaries.Boundaries.test_invalid_records_are_rejected) ... ok
+test_no_releases_no_attendees (test_boundaries.Boundaries.test_no_releases_no_attendees) ... ok
+test_overlap_union_and_duration_clipping (test_boundaries.Boundaries.test_overlap_union_and_duration_clipping) ... ok
+test_private_fields_at_every_record_level (test_boundaries.Boundaries.test_private_fields_at_every_record_level) ... ok
+test_release_context_moves_with_dates (test_boundaries.Boundaries.test_release_context_moves_with_dates) ... ok
+test_company_and_program_scope_rejected_server_side (test_boundaries.HttpBoundary.test_company_and_program_scope_rejected_server_side) ... ok
+test_invalid_missing_empty_and_private_source (test_boundaries.HttpBoundary.test_invalid_missing_empty_and_private_source) ... ok
+test_route_denial_and_query_cannot_select_scope (test_boundaries.HttpBoundary.test_route_denial_and_query_cannot_select_scope) ... ok
+test_contradictions (test_dashboard.Calculations.test_contradictions) ... ok
+test_duplicate_and_reconnect (test_dashboard.Calculations.test_duplicate_and_reconnect) ... ok
+test_no_positive_overlap (test_dashboard.Calculations.test_no_positive_overlap) ... ok
+test_privacy_and_replaceability (test_dashboard.Calculations.test_privacy_and_replaceability) ... ok
+test_snapshot (test_dashboard.Calculations.test_snapshot) ... ok
+test_zero_and_partial_weeks (test_dashboard.Calculations.test_zero_and_partial_weeks) ... ok
+test_anonymous_and_forged_access_denied (test_submission.AccessTests.test_anonymous_and_forged_access_denied) ... ok
+test_login_logout_cookie_scope_and_expiry (test_submission.AccessTests.test_login_logout_cookie_scope_and_expiry) ... ok
+test_wrong_password_rate_limit_and_cross_origin (test_submission.AccessTests.test_wrong_password_rate_limit_and_cross_origin) ... ok
+test_ten_times_dataset (test_submission.ScaleTests.test_ten_times_dataset) ... ok
+test_failure_has_no_fixture_fallback (test_submission.SourceTests.test_failure_has_no_fixture_fallback) ... ok
+test_projection_and_cache (test_submission.SourceTests.test_projection_and_cache) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 3.081s
+
+OK
+120-learner calculation: 0.0120s; sponsor response: 365572 bytes

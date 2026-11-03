@@ -1,0 +1,5 @@
+Live /all integration passed
+Snapshot: 2026-11-03T20:29:44.784000Z
+Enrolled / active / withdrawn: 12 11 1
+Completion: 44 / 66
+Source raw records are memory-only; no raw export was saved.
