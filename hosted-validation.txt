@@ -1,0 +1,3 @@
+PASS: complete hosted model matches Python model for every learner and metric
+PASS: duplicate, clipping, reconnect, empty, in-progress, zero-week, future-release and privacy checks
+PASS: anonymous/forged/expired/session-scope denial, valid login, Secure cookies, logout revocation, CSRF origin, rate limit and private route checks

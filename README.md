@@ -2,6 +2,8 @@
 
 Repository: https://github.com/ArturoR1986/Growth-Institute (public reviewer access).
 
+Hosted reviewer demo: https://growth-institute-sponsor-review.grand-bud-6088.chatgpt.site/ — sign-in credentials are supplied separately. No installation is needed. See HOSTED_DEMO.md for the hosted runtime, access boundary and checks.
+
 Challenge A: a company sponsor sees team progress without entering the learning platform. The sponsor is a separately provisioned account, not a learner. A small Python standard-library server serves a responsive dashboard and a sponsor-safe API.
 
 ## Quick start (fresh checkout)
@@ -38,7 +40,7 @@ The provisioned account has server-owned companyId/programId membership. A succe
 
 Password hashing uses PBKDF2-HMAC-SHA256 with 600,000 iterations and a per-account random salt; comparison is timing-safe. Five sign-in attempts per source IP per minute are allowed. Login/logout POSTs require a matching Origin/Host, and sign-in bodies are size-limited. The server exposes explicit routes only; raw files, local configuration, source and traversal paths return 404. Text is rendered with textContent.
 
-This is a local challenge implementation, not an internet-ready identity system. It binds only to 127.0.0.1. HTTP cookies deliberately omit Secure on local HTTP; a public deployment needs TLS, Secure cookies, trusted Host/origin configuration, a maintained production web server, managed identity/MFA or invitation login, durable/revocable membership and shared session/rate-limit storage. Sessions currently disappear on restart. Only one sponsor and company/program are supported; this does not prove general tenant isolation. Password recovery and account administration were intentionally omitted.
+The following paragraph describes the local Python implementation. Hosted HTTPS review access is implemented separately as documented in HOSTED_DEMO.md. It binds only to 127.0.0.1. HTTP cookies deliberately omit Secure on local HTTP; a public deployment needs TLS, Secure cookies, trusted Host/origin configuration, a maintained production web server, managed identity/MFA or invitation login, durable/revocable membership and shared session/rate-limit storage. Sessions currently disappear on restart. Only one sponsor and company/program are supported; this does not prove general tenant isolation. Password recovery and account administration were intentionally omitted.
 
 ## Product and calculation decisions
 
@@ -68,6 +70,7 @@ Browser checks verified desktop/mobile layout, team tabs, collapse/reopen, keybo
 
 ## Delivery and scope honesty
 
-DECISION_NOTE.md is the Spanish decision note (under 300 words). SUBMISSION_CHECKLIST.md tracks delivery readiness. The repository intentionally excludes credentials, local configuration and logs. No external deployment is required by the brief and none is claimed. Work was AI-assisted. Active work time was not reliably tracked across the successive refinements; measured compliance with the four-hour limit is not claimed. Later hardening and live-source work should be disclosed as follow-up improvements, not presented as a timed initial attempt.
+DECISION_NOTE.md is the Spanish decision note (under 300 words). SUBMISSION_CHECKLIST.md tracks delivery readiness. The repository intentionally excludes credentials, local configuration and logs. The optional hosted reviewer demo has been deployed and tested; see HOSTED_DEMO.md. Work was AI-assisted. Active work time was not reliably tracked across the successive refinements; measured compliance with the four-hour limit is not claimed. Later hardening and live-source work should be disclosed as follow-up improvements, not presented as a timed initial attempt.
+
 
 
