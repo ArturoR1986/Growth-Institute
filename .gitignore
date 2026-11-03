@@ -1,0 +1,16 @@
+.local-config.json
+.local-access.txt
+*.log
+__pycache__/
+*.pyc
+.git-template/
+submission.zip
+
+# Local development artifacts excluded from delivery
+update_dashboard.py
+prepare_submission.py
+adapt_tests.py
+app/provision_local.py
+app/preview_scale.py
+delivery-manifest.json
+fresh-check/
