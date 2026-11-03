@@ -2,17 +2,17 @@
 
 URL: https://growth-institute-sponsor-review.grand-bud-6088.chatgpt.site/
 
-Reviewer credentials are delivered separately to the applicant, not committed to source. No installation or ChatGPT account is required. The application has its own reviewer sign-in. The reviewer account grants only the configured fictional Northwind company/program context.
+Reviewer credentials are delivered separately to the applicant, not committed to source. No installation or ChatGPT account is required. The application has its own reviewer sign-in. The hosted reviewer account is separate from any local Python account and grants only the configured fictional Northwind company/program context.
 
 ## Implementation
 
-The local Python implementation remains runnable using the root README. Sites hosts the equivalent JavaScript ESM Worker under hosted-dashboard/worker/index.js, using the same dashboard HTML. generate_worker.py embeds app/index.html and the sign-in page in the server artifact. worker/logic.js is the authored hosted calculation/access adapter. Full-model parity against the Python output is checked in tests/worker.test.mjs.
+The local Python implementation remains runnable using the root README. Sites hosts the equivalent JavaScript ESM Worker under `hosted-dashboard/worker/index.js`, using the same dashboard HTML. `hosted-dashboard/generate_worker.py` embeds `app/index.html` and the sign-in page in the server artifact. `hosted-dashboard/worker/logic.js` is the authored hosted calculation/access adapter. Full-model parity against the Python output is checked in `hosted-dashboard/tests/worker.test.mjs`.
 
 The live mock API is fetched on the server. Unknown/private source fields are projected out before caching or rendering. No fixture is substituted on API failure. Browser assets contain neither the raw API response nor access secrets.
 
 Hosting secrets: REVIEWER_USERNAME, REVIEWER_PASSWORD_HASH, REVIEWER_PASSWORD_SALT, SESSION_SECRET, SPONSOR_COMPANY_ID, SPONSOR_PROGRAM_ID. Password hashes use PBKDF2-SHA256 (100,000 iterations, compatible with Worker WebCrypto), per-account salt and timing-safe comparison. Session tokens combine random nonces, one-hour expiry, HMAC signatures and server-owned company/program scope. Cookies are Secure, HttpOnly, SameSite=Strict and use the __Host- prefix.
 
-Cloudflare D1 stores only hashed session tokens with expiry and HMAC-obscured source-IP keys for login attempt limits. Sign-out deletes the session record; the same token cannot continue to access the API. Attempts are counted with an atomic SQL upsert. Expired records are pruned during sign-in. No learner profile or coach note is stored in D1. Database schema is in drizzle/0000_reviewer_access.sql; hosting applies schema-only migrations at deployment.
+Cloudflare D1 stores only hashed session tokens with expiry and HMAC-obscured source-IP keys for login attempt limits. Sign-out deletes the session record; the same token cannot continue to access the API. Attempts are counted with an atomic SQL upsert. Expired records are pruned during sign-in. No learner profile or coach note is stored in D1. Database schema is in `hosted-dashboard/drizzle/0000_reviewer_access.sql`; hosting applies schema-only migrations at deployment.
 
 The API source cache is safe in-process data with a 60-second TTL. No default Worker cache access is required. Fetch uses redirect:'manual' and rejects non-success responses because the hosted Worker runtime does not implement redirect:'error'.
 
@@ -32,4 +32,7 @@ Public browser check on 3 November 2026: successful reviewer sign-in; live API p
 
 This uses one shared reviewer account for an intentionally fictional challenge dataset. It has no account recovery, invitation workflow, MFA or multiple-tenant administration. The public endpoint is a review demonstration. A production rollout should use managed individual identity and durable organization membership, stronger centralized security monitoring and deployment-specific load/accessibility checks.
 
-The hosting source project ID and schema are tracked in .openai/hosting.json. Credentials and environment values are not. Reproduction of hosting requires an authorized Sites account; reviewers can use the public link or run the dependency-free Python app locally.
+The hosting source project ID and schema are tracked in `hosted-dashboard/.openai/hosting.json`. Credentials and environment values are not. Reproduction of hosting requires an authorized Sites account; reviewers can use the public link or run the dependency-free Python app locally.
+
+Deployment provenance: hosted version 5 was built from Sites source commit `d1df27f52f88af1b253abf1c6a462f38368236f1`. That is the hosting source repository's commit, not the GitHub submission commit. The repository audit compares the hosted Worker source with that deployment source.
+

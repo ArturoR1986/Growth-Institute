@@ -14,3 +14,13 @@ app/provision_local.py
 app/preview_scale.py
 delivery-manifest.json
 fresh-check/
+
+# Audit/packaging artifacts stay local
+verify_delivery.py
+audit_docs.py
+compare_published.py
+hosted-publication-manifest.json
+hosted-deployment.tar.gz
+repository-audit-manifest.json
+repo-audit-check/
+verify_repo_audit.py

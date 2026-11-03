@@ -1,76 +1,104 @@
-# Growth Institute — Sponsor program dashboard
+# Growth Institute — Sponsor dashboard
 
-Repository: https://github.com/ArturoR1986/Growth-Institute (public reviewer access).
+**[Open the hosted reviewer demo](https://growth-institute-sponsor-review.grand-bud-6088.chatgpt.site/)** · **[Decision note](DECISION_NOTE.md)**
 
-Hosted reviewer demo: https://growth-institute-sponsor-review.grand-bud-6088.chatgpt.site/ — sign-in credentials are supplied separately. No installation is needed. See HOSTED_DEMO.md for the hosted runtime, access boundary and checks.
+No installation or ChatGPT account is needed. Use the reviewer credentials supplied with the application, expand **Team participation**, and choose **View details**. The sign-in page is public; dashboard data requires an authenticated reviewer session. The demo stays available independently of the applicant's computer.
 
-Challenge A: a company sponsor sees team progress without entering the learning platform. The sponsor is a separately provisioned account, not a learner. A small Python standard-library server serves a responsive dashboard and a sponsor-safe API.
+## What this solves
 
-## Quick start (fresh checkout)
+Challenge A: a company sponsor needs to see employees' program participation without entering the learner platform. The dashboard presents active enrollment, released-module completion and the latest finished session's attendance, two group charts, and individual module/session/weekly histories. Active and withdrawn learners are separate. It reports recorded participation without inferring motivation, understanding or learning impact.
 
-Requirements: Python 3.10 or newer; a browser; outbound HTTPS to jobs.growthinstitute.com for live mode. No pip/npm install, database, environment file or build step is needed.
+## Two runtimes, one dashboard
 
-From the repository directory, in PowerShell, cmd, macOS or Linux shell:
+| | Hosted reviewer app | Local development app |
+| --- | --- | --- |
+| Source | `hosted-dashboard/worker/` | `app/` |
+| Runtime | JavaScript on Cloudflare Workers through Sites | Python standard library |
+| UI | Generated from `app/index.html` | `app/index.html` |
+| Source data | Live challenge API, fetched on the server | Live API by default; explicit offline fixture option |
+| Sponsor account | Shared reviewer account; credentials supplied separately | Account provisioned by the person running it |
+| Sessions and login limits | Cloudflare D1; signed, random, one-hour sessions | In-process storage; sessions end on server restart |
+| Cookies | `__Host-` prefix, Secure, HttpOnly, SameSite=Strict | HttpOnly and SameSite=Strict; HTTP on loopback |
+| Password hashing | PBKDF2-SHA256, 100,000 iterations | PBKDF2-SHA256, 600,000 iterations |
 
-    python -B app/manage.py setup
+The hosted calculation model is checked against the complete Python fixture output. D1 stores access records, not learner profiles or private source records. See [HOSTED_DEMO.md](HOSTED_DEMO.md) for hosted source, environment key names, migrations, checks and deployment limitations.
 
-Choose a username and password (12+ characters) at the prompts. This creates only .local-config.json in this directory, storing a random salt and PBKDF2 password hash, not the plaintext password. On systems where Python is named python3, substitute python3 for python in every command.
+## Run locally (optional)
 
-    python -B app/server.py
+Requirements: Python 3.10+ and a browser. Live mode also needs outbound HTTPS to `jobs.growthinstitute.com`. No dependency installation, database or build is needed for the local Python app. From a fresh checkout:
 
-Open http://127.0.0.1:8765/, sign in with the account you created, and expand Team participation. Select View details on a learner; use the Active/Withdrawn controls. Sign out ends the session. Ctrl+C stops the server. If port 8765 is occupied, run `python -B app/server.py --port 8766` and open that port instead.
+```sh
+python -B app/manage.py setup
+python -B app/server.py
+```
 
-For deterministic offline review, explicitly choose:
+Choose a sponsor username and password of at least 12 characters at the setup prompts. Open http://127.0.0.1:8765/ and use that account. On systems where the interpreter is called `python3`, substitute it for `python`. Stop the server with Ctrl+C. If the port is occupied, use `python -B app/server.py --port 8766` and open the corresponding URL.
 
-    python -B app/server.py --source fixture
+For deterministic offline review, start with:
 
-Live mode is the default. Fixture mode is never selected automatically after a network error. On this already-prepared local workspace only, credentials for the provisioned reviewer account are in the gitignored .local-access.txt. That file is excluded from delivery. Fresh-checkout reviewers create their own account using setup.
+```sh
+python -B app/server.py --source fixture
+```
 
-## Data source and error behavior
+Live errors never silently select fixture mode. Setup creates a gitignored `.local-config.json` containing a salt and password hash; no credentials are bundled in the repository. Local accounts and sessions are separate from the hosted reviewer account.
 
-The adapter calls only the original read-only endpoint https://jobs.growthinstitute.com/api/challenge/all. Its schema was verified against https://jobs.growthinstitute.com/api/challenge. Program/company/learner/module/completion/session/attendance fields map to the supplied handoffs. Every response includes generatedAt; it is the single explicit as-of time used throughout. The API dates move with the calendar; the bundled fixture remains pinned to 3 November 2026. All display dates are UTC.
+## Source data, privacy and access
 
-The upstream response is projected on the server before caching or calculation: coach notes, email addresses, media URLs, coach names, estimated study time, minutesSpent, timezones, industry/headcount and long descriptions are never copied into the sponsor view. Raw external records remain in memory only and are never saved or logged. The safe source is cached for 60 seconds in-process; upstream itself advertises five-minute response caching. A 15-second fetch timeout and 2 MB response limit bound external loading. Cache expiry followed by failure produces HTTP 503 and a Retry control, without stale/fixture substitution. Invalid source records produce HTTP 422 with no private error detail. Empty valid records show the empty state; zero denominators show Not available.
+Both adapters use the original read-only [challenge API](https://jobs.growthinstitute.com/api/challenge), specifically `/all`. Its dates move with the calendar. `generatedAt` is the single explicit as-of timestamp; displayed dates are UTC. The bundled fixture is pinned to 3 November 2026. [Handoff 02](Growth_Institute_Codex_Handoff_02_Data_Integration.md) documents its schema and numeric expectations.
 
-To replace the fixture, keep the Handoff 02 schema and schemaVersion 1.0 in Growth_Institute_Dashboard_Data.json, then reload in fixture mode. No template edits are required for names, metrics, charts or histories. Different company/program IDs must be explicitly provisioned in server-side configuration, never selected through a browser query.
+The server projects permitted fields before caching and returning a calculated view. Coach notes, emails, media URLs, estimated study time, `minutesSpent`, learner timezones, industry/headcount, coach names and long descriptions are excluded. Raw external records are not saved or logged by application code, embedded in HTML, or returned to the browser. Source text is rendered with `textContent`.
 
-## Sponsor access and security boundary
+The safe source cache lasts 60 seconds; upstream advertises five-minute caching. Fetches have a 15-second timeout and a response-size check. Network failure produces a Retry state and HTTP 503; invalid data produces HTTP 422 without private exception details. No stale/fixture substitution occurs. Empty records and zero denominators have explicit states.
 
-The provisioned account has server-owned companyId/programId membership. A successful password check creates a cryptographically random, server-held one-hour session; the cookie is HttpOnly and SameSite=Strict. Unknown, forged, expired and logged-out sessions receive HTTP 401 at the API and a sign-in redirect at the page. Source company/program mismatches receive HTTP 403 even if the browser supplies allowed IDs. Learner IDs, sponsor names and client filters do not grant access.
+Protected routes require a valid server-checked session. Company/program membership is server-owned; learner IDs and query parameters cannot grant access. Mismatched source scope receives HTTP 403. Login/logout require the correct request origin; login attempts are limited. Raw files, configuration, source-code and traversal routes are not served.
 
-Password hashing uses PBKDF2-HMAC-SHA256 with 600,000 iterations and a per-account random salt; comparison is timing-safe. Five sign-in attempts per source IP per minute are allowed. Login/logout POSTs require a matching Origin/Host, and sign-in bodies are size-limited. The server exposes explicit routes only; raw files, local configuration, source and traversal paths return 404. Text is rendered with textContent.
+## Calculations and scale
 
-The following paragraph describes the local Python implementation. Hosted HTTPS review access is implemented separately as documented in HOSTED_DEMO.md. It binds only to 127.0.0.1. HTTP cookies deliberately omit Secure on local HTTP; a public deployment needs TLS, Secure cookies, trusted Host/origin configuration, a maintained production web server, managed identity/MFA or invitation login, durable/revocable membership and shared session/rate-limit storage. Sessions currently disappear on restart. Only one sponsor and company/program are supported; this does not prove general tenant isolation. Password recovery and account administration were intentionally omitted.
+Unique learner/module completions use the earliest valid timestamp. Only released modules count toward completion. Attendance is a unique eligible learner/session pair with positive scheduled overlap. Connection intervals are clipped to session/enrollment/withdrawal/as-of bounds and overlapping reconnects are merged. Duration averages include measured attendees only, with their denominator shown. Missing endpoints reject the source rather than inventing zero duration.
 
-## Product and calculation decisions
+Historical session eligibility and the fixed current-active completion cohort are labeled separately. Future requirements and post-withdrawal sessions do not create penalties. Individual averages include completed eligible program weeks only. Late enrollment is rejected until its module eligibility policy is agreed. Latest activity covers recorded completions and eligible session connections, not login or recording views.
 
-The initial view preserves three summary cards, two charts and a collapsed team section. It displays active enrollment, current-active released-module completion and latest finished-session attendance. Historical session eligibility and the fixed current-active completion cohort are labeled separately. Current-week release context explains a newly released module without inventing deadlines or risk scores. Detail controls are visibly labeled.
+Calculations index activity by learner/session; the table renders 20 learners per page. A 120-person fixture produced 110 active learners, 440/660 completions and attendance 110/100/90/60/60/50. The Python calculation took approximately 0.012 seconds in an earlier run; the full safe response was approximately 366 KB. These are small-fixture observations, not a concurrency or load certification. Browser checks walked all six Active pages. At larger scale, server-side pagination and learner details fetched on demand would replace the full-response approach.
 
-Module completions are deduplicated by learner/module using the earliest valid timestamp. Connection intervals are clipped to scheduled session/enrollment/withdrawal/as-of bounds and unioned before summing. Positive overlap establishes recorded attendance; reconnect rows do not inflate counts. Average duration includes measured attendees only, with its denominator exposed. Missing endpoints reject this source contract rather than inventing attendance or zero duration.
+## Verify
 
-Individual details include all module release/completion dates, session status and minutes connected, and separate weekly module/class counts. Only fully completed eligible program weeks enter weekly averages; ongoing/future weeks do not. Withdrawn history is separated and post-withdrawal sessions are Not eligible. Late enrollment fails explicitly until a module eligibility policy is agreed. Latest activity covers recorded completion and eligible connection activity, not login or recording views. Participation is not evidence of learning impact.
+Local Python suite and HTTP smoke check (no external network or reviewer setup required):
 
-## Ten times the data
+```sh
+python -B -m unittest discover -s app -p 'test_*.py' -v
+python -B app/check_http.py
+```
 
-Calculation maps index completions/joins by learner and attendance by session, avoiding repeated whole-cohort scans for individual histories. Team rows are paginated in groups of 20, without adding top-level sections. Tests clone the fixture to 120 learners / 470 completion rows / 470 attendance rows: 110 active, 440/660 completions and attendance series 110/100/90/60/60/50. The observed calculation time was about 0.012 seconds and the full safe response about 366 KB on this machine; these are observations, not a performance guarantee or concurrency/load test.
+Optional real API check, requiring internet:
 
-For this size, a full safe snapshot is acceptable. At substantially larger scale, use server-side team pagination and a lazy learner-detail endpoint; upstream currently has no pagination. With another day, add persistent indexed storage only if freshness/scale requirements justify it, conditional fetching, a production identity provider, automated browser/accessibility tests and realistic load tests. No generic ingestion platform, notifications, learner portal, rankings or inferred learning scores were built.
+```sh
+python -B app/check_live.py
+```
 
-## Tests and evidence
+Hosted calculation/access checks and artifact build, using Node 22+ (no npm install):
 
-    python -B -m unittest discover -s app -p 'test_*.py' -v
-    python -B app/check_http.py
-    python -B app/check_live.py
+```sh
+cd hosted-dashboard
+node tests/worker.test.mjs
+node scripts/build.mjs
+node scripts/validate-artifact.mjs
+```
 
-The first two commands need no external network or configured reviewer account: they create in-memory test accounts and bind temporary loopback ports. check_live needs internet access and validates the real API without saving raw records. The -B option prevents bytecode caches.
+When changing `app/index.html` or `hosted-dashboard/worker/logic.js`, regenerate the committed Worker before running hosted checks/builds:
 
-24 automated tests passed. They cover pinned counts and weekly totals, all 12 histories, date-driven release context, duplicates/earliest timestamps, overlapping/disjoint reconnects and clipping, in-progress sessions, no completed weeks/releases/attendees, empty/malformed/missing files, contradictory withdrawals/late enrollment, private-field projection, server-side scope rejection, raw route denial, login/logout/session expiry/forgery and rate limiting, adapter cache/failure behavior and a 120-person calculation. See validation.txt and live-validation.txt.
+```sh
+cd hosted-dashboard
+python -B generate_worker.py
+```
 
-Browser checks verified desktop/mobile layout, team tabs, collapse/reopen, keyboard activation and all 12 learner panels before access integration. After integration, anonymous page access redirected to the sponsor sign-in page, and actual sign-in loaded the live API dashboard with 44/66 completion. Details of earlier browser checks are in browser-validation.md. The 120-person browser preview was also checked: six Active pages showed 20/20/20/20/20/10 rows, final Next was disabled and keyboard Previous worked. Browser logout returned to sign-in. No exhaustive browser matrix, accessibility audit, browser error-state fault injection or concurrent-user load test is claimed. The approved design screenshot was never present, so exact image matching is unverified.
+`generate_worker.py` also regenerates parity fixtures from the Python reference. Existing fixture tests keep the expected snapshot metrics independently pinned. Do not change an expected result solely to make a failing parity check pass.
 
-## Delivery and scope honesty
+Results and scope: [repository audit](REPOSITORY_AUDIT.md), [current check output](audit-validation.txt), [browser verification](browser-validation.md), [hosted notes](HOSTED_DEMO.md). Earlier logs (`validation.txt`, `fresh-validation.txt`, `live-validation.txt`, `hosted-validation.txt`) record prior check runs.
 
-DECISION_NOTE.md is the Spanish decision note (under 300 words). SUBMISSION_CHECKLIST.md tracks delivery readiness. The repository intentionally excludes credentials, local configuration and logs. The optional hosted reviewer demo has been deployed and tested; see HOSTED_DEMO.md. Work was AI-assisted. Active work time was not reliably tracked across the successive refinements; measured compliance with the four-hour limit is not claimed. Later hardening and live-source work should be disclosed as follow-up improvements, not presented as a timed initial attempt.
+## Limits and delivery
 
+This is a fictional-data review demo with one shared reviewer account and one company/program. Managed individual identity/MFA, invitations, recovery, tenant administration, exhaustive accessibility/browser testing and realistic concurrency testing remain outside scope. The public app uses HTTPS, Secure cookies and durable session revocation; those controls do not make it a production identity system.
 
+No notifications, learner portal, rankings, overdue labels or invented engagement scores were added. The approved design image was never available, so exact screenshot matching is unverified. The design/data handoffs are original input briefs; current implementation and delivery status are described here, in HOSTED_DEMO.md and DELIVERY.md.
 
+The [decision note](DECISION_NOTE.md) contains 278 words. Work was AI-assisted and refined after the first prototype. Active working time was not reliably tracked; measured compliance with the four-hour limit is not claimed. No application email or submission has been sent. The [submission checklist](SUBMISSION_CHECKLIST.md) retains the applicant's final review step.
